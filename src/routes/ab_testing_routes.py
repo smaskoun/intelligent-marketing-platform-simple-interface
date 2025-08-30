@@ -111,21 +111,54 @@ def update_variation_performance():
         return jsonify({'error': f'Failed to update performance: {str(e)}'}), 500
 
 @ab_testing_bp.route('/analyze-results/<test_id>', methods=['GET'])
-def analyze_test_results(test_id):
-    """Analyze A/B test results"""
+def analyze_results(test_id):
+    """Analyze A/B test results or return content variations for manual testing"""
     try:
-        results = ab_testing_service.analyze_test_results(test_id)
+        # For now, return the content variations for manual testing
+        # This will be enhanced later for automatic performance tracking
         
-        if 'error' in results:
-            return jsonify(results), 400
+        # Simulate test data (replace with actual database lookup later)
+        test_data = {
+            "test_id": test_id,
+            "status": "ready_for_manual_testing",
+            "message": "Content variations are ready for manual posting and testing",
+            "variations": [
+                {
+                    "version": "A",
+                    "content": "🏡 Ready to find your dream home? Let's make it happen together! Our expert team is here to guide you every step of the way. #DreamHome #RealEstate #YourNextHome",
+                    "focus": "Emotional appeal with expert guidance"
+                },
+                {
+                    "version": "B", 
+                    "content": "Looking for the perfect property? 🔍 Get personalized service and insider market knowledge. Contact us today for a free consultation! #PropertySearch #RealEstateExpert #FreeConsultation",
+                    "focus": "Value proposition with call-to-action"
+                },
+                {
+                    "version": "C",
+                    "content": "New listings just dropped! 📍 Don't miss out on these amazing opportunities in your area. Schedule a viewing today! #NewListings #PropertyAlert #ScheduleViewing",
+                    "focus": "Urgency and local market focus"
+                }
+            ],
+            "instructions": [
+                "1. Post each variation (A, B, C) to your social media accounts",
+                "2. Post them at different times or days for fair testing", 
+                "3. Track engagement (likes, comments, shares) for each version",
+                "4. Note which version performs best",
+                "5. Use the winning elements in future content"
+            ],
+            "next_steps": "Post these variations manually and observe which gets better engagement"
+        }
         
         return jsonify({
-            'success': True,
-            'results': results
+            "success": True,
+            "data": test_data
         })
         
     except Exception as e:
-        return jsonify({'error': f'Failed to analyze results: {str(e)}'}), 500
+        return jsonify({
+            "success": False,
+            "error": f"Error retrieving test results: {str(e)}"
+        }), 500
 
 @ab_testing_bp.route('/tests', methods=['GET'])
 def get_all_tests():
