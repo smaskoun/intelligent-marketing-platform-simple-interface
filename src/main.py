@@ -11,6 +11,8 @@ from src.routes.user import user_bp
 from src.routes.social_media import social_media_bp
 from src.routes.seo_routes import seo_bp
 from src.routes.brand_voice_routes import brand_voice_bp
+from src.routes.alternative_brand_voice_routes import alternative_brand_voice_bp
+from src.routes.manual_content_routes import manual_content_bp
 from src.routes.ab_testing_routes import ab_testing_bp
 from src.routes.learning_algorithm_routes import learning_algorithm_bp
 
@@ -24,6 +26,8 @@ app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(social_media_bp, url_prefix='/api')
 app.register_blueprint(seo_bp, url_prefix='/api/seo')
 app.register_blueprint(brand_voice_bp, url_prefix='/api/brand-voice')
+app.register_blueprint(alternative_brand_voice_bp, url_prefix='/api/alternative-brand-voice')
+app.register_blueprint(manual_content_bp, url_prefix='/api/manual-content')
 app.register_blueprint(ab_testing_bp, url_prefix='/api/ab-testing')
 app.register_blueprint(learning_algorithm_bp, url_prefix='/api/learning')
 
