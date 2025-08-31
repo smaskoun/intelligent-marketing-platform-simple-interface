@@ -8,7 +8,7 @@ brand_voice_bp = Blueprint('brand_voice', __name__)
 def analyze_user_posts():
     """Analyze user's social media posts to learn their brand voice"""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         access_token = data.get('access_token')
         platform = data.get('platform', 'facebook')
         limit = data.get('limit', 50)
@@ -39,21 +39,44 @@ def analyze_user_posts():
     except Exception as e:
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
 
-@brand_voice_bp.route('/upload-content', methods=['POST'])
-def upload_content_for_analysis():
-    """Upload text content for brand voice analysis"""
+# ADD THIS NEW ROUTE - This is what the frontend is looking for
+@brand_voice_bp.route('/analyze-posts', methods=['POST'])
+def analyze_posts_new():
+    """New analyze posts endpoint that matches frontend expectations"""
     try:
-        data = request.get_json()
-        content_text = data.get('content')
+        data = request.get_json() or {}
         
-        if not content_text:
-            return jsonify({'error': 'Content text is required'}), 400
+        # Check if this is a manual content analysis request
+        if 'posts' in data:
+            posts = data.get('posts', [])
+            if not posts:
+                return jsonify({'error': 'No posts provided for analysis'}), 400
+            
+            # Analyze the provided posts
+            analysis = brand_voice_service.analyze_writing_style(posts)
+            voice_profile = brand_voice_service.create_brand_voice_profile(analysis)
+            
+            return jsonify({
+                'success': True,
+                'posts_analyzed': len(posts),
+                'analysis': analysis,
+                'voice_profile': voice_profile,
+                'message': f'Successfully analyzed {len(posts)} posts'
+            })
         
-        # Split content into individual posts (assuming separated by double newlines)
-        posts = [{'text': post.strip()} for post in content_text.split('\n\n') if post.strip()]
+        # Original token-based analysis
+        access_token = data.get('access_token')
+        platform = data.get('platform', 'facebook')
+        limit = data.get('limit', 50)
+        
+        if not access_token:
+            return jsonify({'error': 'Access token or posts data is required'}), 400
+        
+        # Fetch user's posts
+        posts = brand_voice_service.fetch_user_posts(access_token, platform, limit)
         
         if not posts:
-            return jsonify({'error': 'No valid content found'}), 400
+            return jsonify({'error': 'No posts found or unable to fetch posts'}), 404
         
         # Analyze writing style
         analysis = brand_voice_service.analyze_writing_style(posts)
@@ -66,150 +89,160 @@ def upload_content_for_analysis():
             'posts_analyzed': len(posts),
             'analysis': analysis,
             'voice_profile': voice_profile,
-            'message': f'Successfully analyzed {len(posts)} text samples'
+            'message': f'Successfully analyzed {len(posts)} posts from {platform}'
         })
         
     except Exception as e:
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
 
-@brand_voice_bp.route('/generate-with-voice', methods=['POST'])
-def generate_content_with_voice():
-    """Generate content using learned brand voice"""
+@brand_voice_bp.route('/upload-content', methods=['POST'])
+def upload_content_for_analysis():
+    """Upload text content for brand voice analysis"""
     try:
-        data = request.get_json()
-        content_template = data.get('content_template')
-        voice_profile = data.get('voice_profile')
+        data = request.get_json() or {}
+        content_text = data.get('content')
         
-        if not content_template or not voice_profile:
-            return jsonify({'error': 'Content template and voice profile are required'}), 400
+        if not content_text:
+            return jsonify({'error': 'Content text is required'}), 400
         
-        # Generate content with brand voice
+        # Convert single content to list format for analysis
+        posts = [{'text': content_text}]
+        
+        # Analyze writing style
+        analysis = brand_voice_service.analyze_writing_style(posts)
+        
+        # Create brand voice profile
+        voice_profile = brand_voice_service.create_brand_voice_profile(analysis)
+        
+        return jsonify({
+            'success': True,
+            'content_analyzed': True,
+            'analysis': analysis,
+            'voice_profile': voice_profile,
+            'message': 'Content uploaded and analyzed successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Content analysis failed: {str(e)}'}), 500
+
+@brand_voice_bp.route('/voice-profile', methods=['GET'])
+def get_voice_profile():
+    """Get current brand voice profile"""
+    try:
+        profile = brand_voice_service.get_current_voice_profile()
+        
+        if not profile:
+            return jsonify({
+                'success': False,
+                'error': 'No voice profile available',
+                'message': 'Upload content or analyze posts first to create a voice profile'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'voice_profile': profile,
+            'last_updated': profile.get('last_updated')
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get voice profile: {str(e)}'}), 500
+
+@brand_voice_bp.route('/generate-content', methods=['POST'])
+def generate_content_with_voice():
+    """Generate content using the learned brand voice"""
+    try:
+        data = request.get_json() or {}
+        topic = data.get('topic')
+        content_type = data.get('content_type', 'social_post')
+        platform = data.get('platform', 'instagram')
+        
+        if not topic:
+            return jsonify({'error': 'Topic is required'}), 400
+        
+        # Get current voice profile
+        voice_profile = brand_voice_service.get_current_voice_profile()
+        
+        if not voice_profile:
+            return jsonify({'error': 'No voice profile available. Analyze posts first.'}), 400
+        
+        # Generate content
         generated_content = brand_voice_service.generate_content_with_voice(
-            content_template, voice_profile
+            topic, content_type, platform, voice_profile
         )
         
         return jsonify({
             'success': True,
             'generated_content': generated_content,
-            'voice_applied': True
+            'topic': topic,
+            'content_type': content_type,
+            'platform': platform
         })
         
     except Exception as e:
         return jsonify({'error': f'Content generation failed: {str(e)}'}), 500
 
-@brand_voice_bp.route('/voice-profile', methods=['GET'])
-def get_voice_profile():
-    """Get the current brand voice profile"""
+@brand_voice_bp.route('/sample-analysis', methods=['GET'])
+def get_sample_analysis():
+    """Get a sample brand voice analysis for demonstration"""
     try:
-        # In a real implementation, this would fetch from database
-        # For now, return a sample profile structure
-        sample_profile = {
-            'dominant_tone': 'professional',
+        sample_analysis = {
             'writing_style': {
-                'avg_sentence_length': 15,
-                'uses_questions': True,
-                'uses_exclamations': False,
-                'emoji_frequency': 2.5
+                'tone': 'Professional yet approachable',
+                'formality_level': 'Semi-formal',
+                'sentence_structure': 'Varied with emphasis on clarity',
+                'vocabulary_complexity': 'Accessible professional language'
             },
-            'vocabulary_preferences': {
-                'home': 45,
-                'property': 38,
-                'market': 32,
-                'investment': 28,
-                'community': 25
+            'brand_characteristics': {
+                'personality_traits': ['Knowledgeable', 'Trustworthy', 'Helpful'],
+                'communication_style': 'Direct and informative',
+                'emotional_tone': 'Confident and reassuring'
             },
-            'signature_phrases': [
-                "Ready to make your move?",
-                "Let's find your dream home",
-                "Contact me for more details"
-            ],
-            'content_themes': {
-                'just listed': 12,
-                'market update': 8,
-                'home buying tips': 15,
-                'community spotlight': 6
-            }
+            'content_patterns': {
+                'common_themes': ['Market insights', 'Home buying tips', 'Local expertise'],
+                'call_to_action_style': 'Encouraging and supportive',
+                'hashtag_usage': 'Strategic and relevant'
+            },
+            'recommendations': [
+                'Maintain professional expertise while staying approachable',
+                'Continue using market data to support claims',
+                'Keep calls-to-action clear and helpful'
+            ]
         }
         
         return jsonify({
             'success': True,
-            'voice_profile': sample_profile,
-            'profile_exists': True
+            'sample_analysis': sample_analysis,
+            'message': 'This is a sample analysis. Upload your content for personalized insights.'
         })
         
     except Exception as e:
-        return jsonify({'error': f'Failed to retrieve voice profile: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to get sample analysis: {str(e)}'}), 500
 
-@brand_voice_bp.route('/voice-profile', methods=['POST'])
-def save_voice_profile():
-    """Save or update brand voice profile"""
+@brand_voice_bp.route('/reset-profile', methods=['POST'])
+def reset_voice_profile():
+    """Reset the current brand voice profile"""
     try:
-        data = request.get_json()
-        voice_profile = data.get('voice_profile')
-        
-        if not voice_profile:
-            return jsonify({'error': 'Voice profile data is required'}), 400
-        
-        # In a real implementation, this would save to database
-        # For now, just validate the structure
-        required_fields = ['dominant_tone', 'writing_style', 'vocabulary_preferences']
-        
-        for field in required_fields:
-            if field not in voice_profile:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
+        brand_voice_service.reset_voice_profile()
         
         return jsonify({
             'success': True,
-            'message': 'Voice profile saved successfully',
-            'profile_id': 'voice_profile_001'
+            'message': 'Brand voice profile has been reset'
         })
         
     except Exception as e:
-        return jsonify({'error': f'Failed to save voice profile: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to reset profile: {str(e)}'}), 500
 
-@brand_voice_bp.route('/voice-insights', methods=['GET'])
-def get_voice_insights():
-    """Get insights about the brand voice analysis"""
+@brand_voice_bp.route('/training-status', methods=['GET'])
+def get_training_status():
+    """Get the current training status of the brand voice model"""
     try:
-        # Sample insights data
-        insights = {
-            'analysis_summary': {
-                'total_posts_analyzed': 45,
-                'analysis_date': '2025-08-27',
-                'confidence_score': 85,
-                'data_quality': 'high'
-            },
-            'tone_breakdown': {
-                'professional': 65,
-                'friendly': 25,
-                'educational': 8,
-                'motivational': 2
-            },
-            'writing_characteristics': {
-                'avg_post_length': 180,
-                'question_frequency': 15,
-                'emoji_usage': 'moderate',
-                'hashtag_count_avg': 9
-            },
-            'engagement_correlation': {
-                'high_engagement_traits': [
-                    'Posts with questions get 40% more comments',
-                    'Educational content has highest save rate',
-                    'Community posts generate most shares'
-                ],
-                'optimization_suggestions': [
-                    'Increase question usage for better engagement',
-                    'Maintain current emoji level',
-                    'Focus on educational content themes'
-                ]
-            }
-        }
+        status = brand_voice_service.get_training_status()
         
         return jsonify({
             'success': True,
-            'insights': insights
+            'training_status': status
         })
         
     except Exception as e:
-        return jsonify({'error': f'Failed to retrieve insights: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to get training status: {str(e)}'}), 500
 

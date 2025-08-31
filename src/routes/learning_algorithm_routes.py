@@ -8,7 +8,7 @@ learning_algorithm_bp = Blueprint('learning_algorithm', __name__)
 def fetch_post_performance():
     """Fetch performance data from social media platforms"""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         access_token = data.get('access_token')
         platform = data.get('platform', 'facebook')
         
@@ -53,48 +53,28 @@ def analyze_performance_patterns():
     except Exception as e:
         return jsonify({'error': f'Failed to analyze patterns: {str(e)}'}), 500
 
-@learning_algorithm_bp.route('/recommendations', methods=['GET'])
-def get_content_recommendations():
-    """Get AI-powered content recommendations"""
-    try:
-        content_type = request.args.get('content_type')
-        
-        recommendations = learning_algorithm_service.get_content_recommendations(content_type)
-        
-        if 'error' in recommendations:
-            return jsonify(recommendations), 400
-        
-        return jsonify({
-            'success': True,
-            'recommendations': recommendations,
-            'generated_at': learning_algorithm_service.performance_history[-1]['created_time'] if learning_algorithm_service.performance_history else None
-        })
-        
-    except Exception as e:
-        return jsonify({'error': f'Failed to generate recommendations: {str(e)}'}), 500
-
 @learning_algorithm_bp.route('/insights', methods=['GET'])
 def get_learning_insights():
-    """Get current learning insights"""
+    """Get current learning insights and recommendations"""
     try:
         insights = learning_algorithm_service.learning_insights
         
-        # Add summary statistics
-        summary = {
-            'total_posts_analyzed': len(learning_algorithm_service.performance_history),
-            'data_quality': 'high' if len(learning_algorithm_service.performance_history) > 30 else 'medium' if len(learning_algorithm_service.performance_history) > 10 else 'low',
-            'last_analysis': learning_algorithm_service.performance_history[-1]['created_time'] if learning_algorithm_service.performance_history else None,
-            'insights_available': len([k for k, v in insights.items() if v])
-        }
+        if not insights:
+            return jsonify({
+                'success': False,
+                'error': 'No insights available yet',
+                'recommendation': 'Upload more content or fetch performance data first'
+            }), 400
         
         return jsonify({
             'success': True,
             'insights': insights,
-            'summary': summary
+            'last_updated': insights.get('last_updated'),
+            'data_points': len(learning_algorithm_service.performance_history)
         })
         
     except Exception as e:
-        return jsonify({'error': f'Failed to retrieve insights: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to get insights: {str(e)}'}), 500
 
 @learning_algorithm_bp.route('/performance-history', methods=['GET'])
 def get_performance_history():
@@ -143,25 +123,44 @@ def get_optimal_timing():
     try:
         platform = request.args.get('platform', 'instagram')
         
+        # Check if we have enough data
+        if len(learning_algorithm_service.performance_history) < 5:
+            return jsonify({
+                'success': True,
+                'optimal_timing': {
+                    'best_hours': ['9:00', '12:00', '17:00'],
+                    'best_days': ['Tuesday', 'Wednesday', 'Thursday'],
+                    'detailed_analysis': {
+                        'note': 'Default recommendations - need more data for personalized insights'
+                    }
+                },
+                'platform': platform,
+                'confidence': 'low',
+                'message': 'Using default timing recommendations. Upload more content for personalized insights.'
+            })
+        
         insights = learning_algorithm_service.learning_insights
         timing_data = insights.get('optimal_posting_times', {})
         
         if not timing_data:
-            return jsonify({
-                'success': False,
-                'error': 'Insufficient data for timing analysis',
-                'recommendation': 'Need at least 10 posts for reliable timing insights'
-            }), 400
+            # Generate basic timing recommendations
+            timing_data = {
+                'best_hours': [9, 12, 17],
+                'best_days': [1, 2, 3],
+                'detailed_analysis': {
+                    'note': 'Basic recommendations based on general best practices'
+                }
+            }
         
         # Convert hour numbers to readable format
-        best_hours = timing_data.get('best_hours', [])
-        best_days = timing_data.get('best_days', [])
+        best_hours = timing_data.get('best_hours', [9, 12, 17])
+        best_days = timing_data.get('best_days', [1, 2, 3])
         
         day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         
         readable_timing = {
             'best_hours': [f"{hour}:00" for hour in best_hours],
-            'best_days': [day_names[day] for day in best_days if day < len(day_names)],
+            'best_days': [day_names[day] for day in best_days if 0 <= day < len(day_names)],
             'detailed_analysis': timing_data.get('detailed_analysis', {})
         }
         
@@ -184,10 +183,14 @@ def get_hashtag_analysis():
         
         if not hashtag_data:
             return jsonify({
-                'success': False,
-                'error': 'No hashtag analysis available',
-                'recommendation': 'Need more posts with hashtags for analysis'
-            }), 400
+                'success': True,
+                'hashtag_analysis': {
+                    'top_hashtags': [],
+                    'recommendations': ['#RealEstate', '#WindsorEssex', '#DreamHome', '#PropertyListing', '#HomeBuying'],
+                    'note': 'Default recommendations - need more posts with hashtags for personalized analysis'
+                },
+                'message': 'Using default hashtag recommendations. Upload more content for personalized insights.'
+            })
         
         top_hashtags = hashtag_data.get('top_performing_hashtags', {})
         
@@ -203,133 +206,72 @@ def get_hashtag_analysis():
         
         return jsonify({
             'success': True,
-            'top_hashtags': formatted_hashtags,
-            'total_analyzed': hashtag_data.get('total_hashtags_analyzed', 0),
-            'recommendations': formatted_hashtags[:5]  # Top 5 recommendations
+            'hashtag_analysis': {
+                'top_hashtags': formatted_hashtags,
+                'total_analyzed': len(top_hashtags),
+                'recommendations': hashtag_data.get('recommendations', [])
+            }
         })
         
     except Exception as e:
         return jsonify({'error': f'Failed to get hashtag analysis: {str(e)}'}), 500
 
-@learning_algorithm_bp.route('/content-optimization', methods=['GET'])
-def get_content_optimization():
-    """Get content optimization insights"""
+@learning_algorithm_bp.route('/content-recommendations', methods=['GET'])
+def get_content_recommendations():
+    """Get AI-powered content recommendations"""
     try:
-        insights = learning_algorithm_service.learning_insights
+        content_type = request.args.get('type', 'general')
+        platform = request.args.get('platform', 'instagram')
         
-        content_types = insights.get('content_type_performance', {})
-        length_analysis = insights.get('content_length_optimization', {})
-        engagement_patterns = insights.get('engagement_patterns', {})
-        
-        optimization_tips = []
-        
-        # Content type recommendations
-        if content_types:
-            best_type = max(content_types.items(), key=lambda x: x[1].get('avg_engagement', 0))
-            optimization_tips.append({
-                'category': 'Content Type',
-                'recommendation': f"Focus more on {best_type[0]} content",
-                'reason': f"Performs {best_type[1].get('avg_engagement', 0):.1f}% better on average",
-                'confidence': 'high' if best_type[1].get('post_count', 0) > 5 else 'medium'
-            })
-        
-        # Length recommendations
-        if length_analysis:
-            best_length = max(length_analysis.items(), key=lambda x: x[1].get('avg_engagement', 0))
-            optimization_tips.append({
-                'category': 'Content Length',
-                'recommendation': f"Optimal content length is {best_length[0]}",
-                'reason': f"Shows {best_length[1].get('avg_engagement', 0):.1f}% engagement rate",
-                'confidence': 'medium'
-            })
-        
-        # Engagement pattern recommendations
-        if engagement_patterns:
-            emoji_impact = engagement_patterns.get('emoji_impact', {})
-            if emoji_impact:
-                with_emojis = emoji_impact.get('with_emojis', {}).get('avg_engagement', 0)
-                without_emojis = emoji_impact.get('without_emojis', {}).get('avg_engagement', 0)
-                
-                if with_emojis > without_emojis * 1.2:
-                    optimization_tips.append({
-                        'category': 'Emoji Usage',
-                        'recommendation': 'Include emojis in your posts',
-                        'reason': f"{((with_emojis - without_emojis) / without_emojis * 100):.1f}% better engagement",
-                        'confidence': 'high'
-                    })
+        recommendations = learning_algorithm_service.generate_content_recommendations(content_type, platform)
         
         return jsonify({
             'success': True,
-            'optimization_tips': optimization_tips,
-            'detailed_insights': {
-                'content_types': content_types,
-                'length_analysis': length_analysis,
-                'engagement_patterns': engagement_patterns
-            }
+            'recommendations': recommendations,
+            'content_type': content_type,
+            'platform': platform
         })
         
     except Exception as e:
-        return jsonify({'error': f'Failed to get content optimization: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to get content recommendations: {str(e)}'}), 500
 
-@learning_algorithm_bp.route('/learning-status', methods=['GET'])
-def get_learning_status():
-    """Get current learning algorithm status"""
+@learning_algorithm_bp.route('/update-performance', methods=['POST'])
+def update_performance_manually():
+    """Manually update performance data for posts"""
     try:
-        history_count = len(learning_algorithm_service.performance_history)
-        min_required = learning_algorithm_service.min_data_points
+        data = request.get_json() or {}
+        post_id = data.get('post_id')
+        performance_data = data.get('performance_data', {})
         
-        status = {
-            'data_points': history_count,
-            'min_required': min_required,
-            'status': 'active' if history_count >= min_required else 'learning',
-            'progress': min(100, (history_count / min_required) * 100),
-            'insights_available': len([k for k, v in learning_algorithm_service.learning_insights.items() if v]),
-            'last_update': learning_algorithm_service.performance_history[-1]['created_time'] if learning_algorithm_service.performance_history else None
-        }
+        if not post_id or not performance_data:
+            return jsonify({'error': 'Post ID and performance data are required'}), 400
         
-        # Determine learning quality
-        if history_count >= 50:
-            status['quality'] = 'excellent'
-        elif history_count >= 30:
-            status['quality'] = 'good'
-        elif history_count >= min_required:
-            status['quality'] = 'fair'
-        else:
-            status['quality'] = 'insufficient'
+        # Update the performance data
+        success = learning_algorithm_service.update_post_performance(post_id, performance_data)
         
-        return jsonify({
-            'success': True,
-            'learning_status': status
-        })
-        
-    except Exception as e:
-        return jsonify({'error': f'Failed to get learning status: {str(e)}'}), 500
-
-@learning_algorithm_bp.route('/export-insights', methods=['GET'])
-def export_insights():
-    """Export learning insights as downloadable data"""
-    try:
-        export_format = request.args.get('format', 'json')
-        
-        export_data = {
-            'export_date': learning_algorithm_service.performance_history[-1]['created_time'] if learning_algorithm_service.performance_history else None,
-            'total_posts_analyzed': len(learning_algorithm_service.performance_history),
-            'insights': learning_algorithm_service.learning_insights,
-            'performance_summary': {
-                'avg_engagement_rate': sum(post.get('engagement_rate', 0) for post in learning_algorithm_service.performance_history) / len(learning_algorithm_service.performance_history) if learning_algorithm_service.performance_history else 0,
-                'total_posts': len(learning_algorithm_service.performance_history)
-            }
-        }
-        
-        if export_format == 'json':
+        if success:
             return jsonify({
                 'success': True,
-                'export_data': export_data,
-                'format': 'json'
+                'message': 'Performance data updated successfully',
+                'post_id': post_id
             })
         else:
-            return jsonify({'error': 'Only JSON format is currently supported'}), 400
+            return jsonify({'error': 'Failed to update performance data'}), 400
         
     except Exception as e:
-        return jsonify({'error': f'Failed to export insights: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to update performance: {str(e)}'}), 500
+
+@learning_algorithm_bp.route('/reset-data', methods=['POST'])
+def reset_learning_data():
+    """Reset all learning algorithm data"""
+    try:
+        learning_algorithm_service.reset_data()
+        
+        return jsonify({
+            'success': True,
+            'message': 'All learning algorithm data has been reset'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to reset data: {str(e)}'}), 500
 
