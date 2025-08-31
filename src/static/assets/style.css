@@ -1,0 +1,148 @@
+/* Main A/B Testing Modal Styles */
+.ab-modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ab-modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.ab-modal-content.results {
+    padding: 30px 40px;
+}
+
+.ab-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #e9ecef;
+    color: #6c757d;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 30px;
+    text-align: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.ab-modal-close:hover {
+    background: #dc3545;
+    color: white;
+}
+
+/* Spinner for loading state */
+.ab-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: ab-spin 1s linear infinite;
+    margin: 20px auto 0;
+}
+
+@keyframes ab-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* General Content Styles */
+.ab-modal-content h2 { margin-top: 0; }
+.ab-modal-content h3 { color: #495057; }
+.ab-modal-content h4 { color: #343a40; margin-top: 25px; }
+.ab-modal-content .error-title { color: #dc3545; }
+
+.ab-message-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.ab-variations-container {
+    display: grid;
+    gap: 20px;
+}
+
+.ab-variation-card {
+    border: 1px solid #dee2e6;
+    padding: 20px;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+.ab-variation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.ab-variation-header h4 {
+    margin: 0;
+    color: #007bff;
+}
+
+.ab-copy-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ab-copy-btn:hover { background: #218838; }
+.ab-copy-btn:disabled { background: #17a2b8; cursor: default; }
+
+.ab-variation-strategy {
+    color: #6c757d;
+    font-style: italic;
+    margin: 0 0 15px;
+}
+
+.ab-variation-content {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+    line-height: 1.6;
+}
+
+.ab-instructions {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.ab-instructions ol {
+    padding-left: 20px;
+    margin: 0;
+}
