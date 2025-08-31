@@ -1,9 +1,120 @@
 from flask import Blueprint, request, jsonify
 from ..services.seo_content_service import seo_content_service
+from ..services.enhanced_seo_content_service import enhanced_seo_content_service
 import json
 from datetime import datetime
 
 seo_bp = Blueprint('seo', __name__)
+
+@seo_bp.route('/content/generate-enhanced', methods=['POST'])
+def generate_enhanced_content():
+    """Generate enhanced, non-repetitive SEO-optimized content"""
+    data = request.get_json()
+    
+    # Validate required fields
+    content_type = data.get('content_type', 'community')
+    platform = data.get('platform', 'instagram')
+    location = data.get('location')
+    custom_data = data.get('custom_data', {})
+    
+    # Validate content type
+    valid_types = ['property_showcase', 'market_update', 'educational', 'community']
+    if content_type not in valid_types:
+        return jsonify({
+            'error': f'Invalid content type. Must be one of: {", ".join(valid_types)}'
+        }), 400
+    
+    # Validate platform
+    valid_platforms = ['instagram', 'facebook']
+    if platform not in valid_platforms:
+        return jsonify({
+            'error': f'Invalid platform. Must be one of: {", ".join(valid_platforms)}'
+        }), 400
+    
+    try:
+        # Generate enhanced diverse content
+        result = enhanced_seo_content_service.generate_diverse_content(
+            content_type=content_type,
+            platform=platform,
+            location=location,
+            custom_data=custom_data
+        )
+        
+        return jsonify({
+            'success': True,
+            'content': result,
+            'message': 'Enhanced content generated with improved diversity'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Failed to generate enhanced content: {str(e)}'
+        }), 500
+
+@seo_bp.route('/content/analytics', methods=['GET'])
+def get_content_analytics():
+    """Get analytics on content generation patterns and diversity"""
+    try:
+        analytics = enhanced_seo_content_service.get_content_analytics()
+        
+        return jsonify({
+            'success': True,
+            'analytics': analytics,
+            'message': 'Content generation analytics retrieved successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Failed to get analytics: {str(e)}'
+        }), 500
+
+@seo_bp.route('/content/batch-generate-enhanced', methods=['POST'])
+def batch_generate_enhanced_content():
+    """Generate multiple pieces of enhanced, diverse content"""
+    data = request.get_json()
+    
+    count = data.get('count', 5)
+    platform = data.get('platform', 'instagram')
+    content_types = data.get('content_types', ['property_showcase', 'educational', 'community'])
+    locations = data.get('locations', [])
+    
+    # Validate count
+    if not isinstance(count, int) or count < 1 or count > 20:
+        return jsonify({
+            'error': 'Count must be an integer between 1 and 20'
+        }), 400
+    
+    try:
+        generated_content = []
+        
+        for i in range(count):
+            # Rotate through content types
+            content_type = content_types[i % len(content_types)]
+            
+            # Use specific location if provided, otherwise let service choose
+            location = None
+            if locations:
+                location = locations[i % len(locations)]
+            
+            result = enhanced_seo_content_service.generate_diverse_content(
+                content_type=content_type,
+                platform=platform,
+                location=location
+            )
+            
+            generated_content.append(result)
+        
+        return jsonify({
+            'success': True,
+            'content': generated_content,
+            'total_generated': len(generated_content),
+            'message': 'Enhanced batch content generated with improved diversity'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Failed to generate enhanced batch content: {str(e)}'
+        }), 500
 
 @seo_bp.route('/content/generate', methods=['POST'])
 def generate_seo_content():

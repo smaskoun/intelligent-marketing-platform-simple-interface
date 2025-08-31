@@ -13,6 +13,7 @@ from src.routes.seo_routes import seo_bp
 from src.routes.brand_voice_routes import brand_voice_bp
 from src.routes.ab_testing_routes import ab_testing_bp
 from src.routes.learning_algorithm_routes import learning_algorithm_bp
+from src.routes.market_data_routes import market_data_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -26,6 +27,7 @@ app.register_blueprint(seo_bp, url_prefix='/api/seo')
 app.register_blueprint(brand_voice_bp, url_prefix='/api/brand-voice')
 app.register_blueprint(ab_testing_bp, url_prefix='/api/ab-testing')
 app.register_blueprint(learning_algorithm_bp, url_prefix='/api/learning')
+app.register_blueprint(market_data_bp, url_prefix='/api/market-data')
 
 # uncomment if you need to use database
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"

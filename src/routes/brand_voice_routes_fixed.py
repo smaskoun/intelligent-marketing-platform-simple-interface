@@ -28,12 +28,20 @@ def analyze_posts():
                 'message': f'Successfully analyzed {len(posts)} posts'
             })
         
-
+        # Original token-based analysis
+        access_token = data.get('access_token')
+        platform = data.get('platform', 'facebook')
+        limit = data.get('limit', 50)
         
-        # If posts are not provided, return an error as token-based fetching is removed
+        if not access_token:
+            return jsonify({'error': 'Access token or posts data is required'}), 400
+        
+        # Fetch user's posts
+        posts = brand_voice_service.fetch_user_posts(access_token, platform, limit)
+        
         if not posts:
-            return jsonify({'error': 'No posts provided for analysis. Token-based fetching has been removed.'}), 400
-
+            return jsonify({'error': 'No posts found or unable to fetch posts'}), 404
+        
         # Analyze writing style
         analysis = brand_voice_service.analyze_writing_style(posts)
         
@@ -45,7 +53,7 @@ def analyze_posts():
             'posts_analyzed': len(posts),
             'analysis': analysis,
             'voice_profile': voice_profile,
-            'message': f'Successfully analyzed {len(posts)} posts'
+            'message': f'Successfully analyzed {len(posts)} posts from {platform}'
         })
         
     except Exception as e:
@@ -123,7 +131,7 @@ def get_voice_profile():
             'success': False,
             'error': 'Service temporarily unavailable',
             'message': 'Unable to retrieve voice profile at this time. Please try again later.',
-            'debug_info': error_message
+            'debug_info': error_message if app.debug else None
         }), 500
 
 @brand_voice_bp.route('/generate-content', methods=['POST'])

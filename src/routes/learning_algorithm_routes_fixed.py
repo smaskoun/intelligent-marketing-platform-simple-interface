@@ -18,26 +18,35 @@ def get_learning_status():
     except Exception as e:
         return jsonify({'error': f'Failed to get learning status: {str(e)}'}), 500
 
-@learning_algorithm_bp.route("/upload-performance-data", methods=["POST"])
-def upload_performance_data():
-    """Manually upload performance data for posts"""
+@learning_algorithm_bp.route('/fetch-performance', methods=['POST'])
+def fetch_post_performance():
+    """Fetch performance data from social media platforms"""
     try:
         data = request.get_json() or {}
-        posts = data.get("posts")
+        access_token = data.get('access_token')
+        platform = data.get('platform', 'facebook')
         
-        if not posts or not isinstance(posts, list):
-            return jsonify({"error": "'posts' field with a list of post data is required"}), 400
+        if not access_token:
+            return jsonify({'error': 'Access token is required'}), 400
         
-        # Update the performance data
-        learning_algorithm_service.update_performance_history(posts)
+        # Fetch performance data
+        posts_data = learning_algorithm_service.fetch_post_performance(access_token, platform)
+        
+        if not posts_data:
+            return jsonify({'error': 'No performance data found or unable to fetch data'}), 404
+        
+        # Update performance history
+        learning_algorithm_service.update_performance_history(posts_data)
         
         return jsonify({
-            "success": True,
-            "message": f"Successfully uploaded and processed {len(posts)} posts."
+            'success': True,
+            'posts_fetched': len(posts_data),
+            'platform': platform,
+            'message': f'Successfully fetched performance data for {len(posts_data)} posts'
         })
         
     except Exception as e:
-        return jsonify({"error": f"Failed to upload performance data: {str(e)}"}), 500
+        return jsonify({'error': f'Failed to fetch performance data: {str(e)}'}), 500
 
 @learning_algorithm_bp.route('/analyze-patterns', methods=['POST'])
 def analyze_performance_patterns():

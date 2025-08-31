@@ -33,122 +33,7 @@ class LearningAlgorithmService:
             'impressions': 0.05
         }
     
-    def fetch_post_performance(self, access_token: str, platform: str = 'facebook') -> List[Dict]:
-        """
-        Fetch performance data for recent posts
-        
-        Args:
-            access_token: User's social media access token
-            platform: 'facebook' or 'instagram'
-        
-        Returns:
-            List of post performance data
-        """
-        posts_data = []
-        
-        try:
-            if platform == 'facebook':
-                # Facebook Graph API for post insights
-                url = "https://graph.facebook.com/v18.0/me/posts"
-                params = {
-                    'access_token': access_token,
-                    'fields': 'id,message,created_time,insights.metric(post_impressions,post_engaged_users,post_clicks,post_reactions_like_total,post_comments,post_shares)',
-                    'limit': 50
-                }
-                
-            elif platform == 'instagram':
-                # Instagram Basic Display API for media insights
-                url = "https://graph.instagram.com/me/media"
-                params = {
-                    'access_token': access_token,
-                    'fields': 'id,caption,timestamp,insights.metric(impressions,reach,likes,comments,saves,shares)',
-                    'limit': 50
-                }
-            
-            response = requests.get(url, params=params)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                for post in data.get('data', []):
-                    post_data = self._process_post_data(post, platform)
-                    if post_data:
-                        posts_data.append(post_data)
-            
-        except Exception as e:
-            print(f"Error fetching post performance: {str(e)}")
-        
-        return posts_data
-    
-    def _process_post_data(self, post: Dict, platform: str) -> Optional[Dict]:
-        """Process raw post data into standardized format"""
-        try:
-            if platform == 'facebook':
-                content = post.get('message', '')
-                post_id = post.get('id')
-                created_time = post.get('created_time')
-                
-                # Extract insights data
-                insights = post.get('insights', {}).get('data', [])
-                metrics = {}
-                
-                for insight in insights:
-                    metric_name = insight.get('name')
-                    metric_value = insight.get('values', [{}])[0].get('value', 0)
-                    
-                    if metric_name == 'post_impressions':
-                        metrics['impressions'] = metric_value
-                    elif metric_name == 'post_engaged_users':
-                        metrics['engaged_users'] = metric_value
-                    elif metric_name == 'post_reactions_like_total':
-                        metrics['likes'] = metric_value
-                    elif metric_name == 'post_comments':
-                        metrics['comments'] = metric_value
-                    elif metric_name == 'post_shares':
-                        metrics['shares'] = metric_value
-                    elif metric_name == 'post_clicks':
-                        metrics['clicks'] = metric_value
-                
-            elif platform == 'instagram':
-                content = post.get('caption', '')
-                post_id = post.get('id')
-                created_time = post.get('timestamp')
-                
-                # Extract insights data
-                insights = post.get('insights', {}).get('data', [])
-                metrics = {}
-                
-                for insight in insights:
-                    metric_name = insight.get('name')
-                    metric_value = insight.get('values', [{}])[0].get('value', 0)
-                    metrics[metric_name] = metric_value
-            
-            if not content or not post_id:
-                return None
-            
-            # Calculate engagement rate
-            impressions = metrics.get('impressions', 1)
-            total_engagement = (
-                metrics.get('likes', 0) + 
-                metrics.get('comments', 0) + 
-                metrics.get('shares', 0) + 
-                metrics.get('saves', 0)
-            )
-            engagement_rate = (total_engagement / impressions) * 100 if impressions > 0 else 0
-            
-            return {
-                'post_id': post_id,
-                'content': content,
-                'platform': platform,
-                'created_time': created_time,
-                'metrics': metrics,
-                'engagement_rate': engagement_rate,
-                'total_engagement': total_engagement
-            }
-            
-        except Exception as e:
-            print(f"Error processing post data: {str(e)}")
-            return None
+
     
     def update_performance_history(self, posts_data: List[Dict]):
         """Update the performance history with new data"""
@@ -170,7 +55,7 @@ class LearningAlgorithmService:
         cutoff_date = datetime.now() - timedelta(days=180)
         self.performance_history = [
             post for post in self.performance_history 
-            if datetime.fromisoformat(post['created_time'].replace('Z', '+00:00')) > cutoff_date
+            if "created_time" in post and datetime.fromisoformat(post["created_time"].replace("Z", "+00:00")) > cutoff_date
         ]
     
     def analyze_performance_patterns(self) -> Dict:
