@@ -1,5 +1,9 @@
+# routes/learning_algorithm_routes.py
+
 from flask import Blueprint, request, jsonify
-from ..services.learning_algorithm_service import learning_algorithm_service
+# --- CORRECTED IMPORT ---
+from services.learning_algorithm_service import learning_algorithm_service
+# -------------------------
 
 # We keep the same blueprint name and prefix for consistency.
 learning_algorithm_bp = Blueprint('learning_algorithm', __name__)
@@ -39,4 +43,3 @@ def get_content_recommendations():
         # Basic error handling
         print(f"Error in /content-recommendations endpoint: {e}")
         return jsonify({'success': False, 'error': f'Failed to get content recommendations: {str(e)}'}), 500
-
