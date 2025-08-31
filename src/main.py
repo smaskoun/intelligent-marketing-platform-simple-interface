@@ -1,57 +1,60 @@
 import os
 import sys
-# DON'T CHANGE THIS !!!
+# This line is important for your project's structure, so we keep it.
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from src.models.user import db
-from src.models.social_media import SocialMediaAccount, SocialMediaPost, AIImageGeneration, PostingSchedule
-from src.routes.user import user_bp
-from src.routes.social_media import social_media_bp
-from src.routes.seo_routes import seo_bp
-from src.routes.brand_voice_routes import brand_voice_bp
-from src.routes.ab_testing_routes import ab_testing_bp
-from src.routes.learning_algorithm_routes import learning_algorithm_bp
+
+# --- 1. UPDATED MODEL IMPORT ---
+# We now import the 'db' object from our new, clean models file.
+from src.models.social_media import db
+
+# --- 2. UPDATED BLUEPRINT IMPORTS ---
+# We only import the blueprints that are part of our new, refactored application.
+# For now, that is just the brand_voice blueprint. We will add the A/B testing one later.
+from src.routes.brand_voice import brand_voice_bp
+# We will also keep the market_data_routes for now as it seems independent.
 from src.routes.market_data_routes import market_data_bp
 
-app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
-app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
-# Enable CORS for all routes
-CORS(app, origins="*")
+# --- Application Factory Pattern ---
+# It's best practice to create the app inside a function.
+def create_app():
+    """Creates and configures the Flask application."""
+    
+    app = Flask(__name__, static_folder='static')
+    app.config['SECRET_KEY'] = 'a-new-secret-key-is-better' # It's good practice to change default keys.
 
-app.register_blueprint(user_bp, url_prefix='/api')
-app.register_blueprint(social_media_bp, url_prefix='/api')
-app.register_blueprint(seo_bp, url_prefix='/api/seo')
-app.register_blueprint(brand_voice_bp, url_prefix='/api/brand-voice')
-app.register_blueprint(ab_testing_bp, url_prefix='/api/ab-testing')
-app.register_blueprint(learning_algorithm_bp, url_prefix='/api/learning')
-app.register_blueprint(market_data_bp, url_prefix='/api/market-data')
+    # Enable CORS for all routes
+    CORS(app)
 
-# uncomment if you need to use database
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
-with app.app_context():
-    db.create_all()
+    # --- Database Configuration ---
+    # This path is corrected to work from within the 'src' directory.
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database', 'app.db')}"
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    static_folder_path = app.static_folder
-    if static_folder_path is None:
-            return "Static folder not configured", 404
+    # --- 3. REGISTER CLEANED BLUEPRINTS ---
+    # We only register the blueprints we are actively using.
+    app.register_blueprint(brand_voice_bp) # From our new brand_voice.py
+    app.register_blueprint(market_data_bp) # From your existing market_data_routes.py
 
-    if path != "" and os.path.exists(os.path.join(static_folder_path, path)):
-        return send_from_directory(static_folder_path, path)
-    else:
-        index_path = os.path.join(static_folder_path, 'index.html')
-        if os.path.exists(index_path):
-            return send_from_directory(static_folder_path, 'index.html')
-        else:
-            return "index.html not found", 404
+    # --- 4. SIMPLIFIED ROUTE TO SERVE THE FRONTEND ---
+    # This single route will serve your main HTML page.
+    @app.route('/')
+    def serve_index():
+        return send_from_directory(app.static_folder, 'social-media-automation.html')
 
+    # This block creates the database tables (e.g., 'training_data') if they don't exist.
+    with app.app_context():
+        db.create_all()
+        
+    return app
 
+# --- Main execution block ---
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app = create_app()
+    # Use port 5001 to avoid potential conflicts with other services like React dev server
+    app.run(host='0.0.0.0', port=5001, debug=True)
+
