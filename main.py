@@ -4,12 +4,13 @@ import os
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
-# FINAL, SIMPLIFIED IMPORTS (no 'src.' prefix)
+# --- CORRECTED IMPORTS ---
 from models.social_media import db
-from routes.brand_voice import brand_voice_bp
+from routes.brand_voice import brand_voice_bp  # This file now exists
 from routes.learning_algorithm_routes import learning_algorithm_bp
 from routes.ab_testing_routes import ab_testing_bp
 from routes.market_data_routes import market_data_bp
+# -------------------------
 
 def create_app():
     app = Flask(__name__)
