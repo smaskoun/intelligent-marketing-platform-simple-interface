@@ -1,20 +1,31 @@
 /**
  * Content Platform Module
- * Handles AI training, content generation, and A/B testing.
+ * Handles AI training, content generation, A/B testing, and market data display.
  */
 class ContentPlatform {
     constructor() {
         this.apiBase = '/api';
         this.currentUser = 'default_user';
+        this.marketDataLoaded = false; // Flag to prevent multiple loads
         this.init();
     }
 
     init() {
         this.setupEventListeners();
+        this.handleInitialTab();
     }
 
     setupEventListeners() {
-        // Listener for the "Train Brand Voice" form
+        // --- Tab Switching ---
+        const tabs = document.querySelectorAll('.tab-button');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.switchTab(tab.hash);
+            });
+        });
+
+        // --- "Train Brand Voice" form ---
         const addContentBtn = document.getElementById('add-content-btn');
         if (addContentBtn) {
             addContentBtn.addEventListener('click', (e) => {
@@ -23,7 +34,7 @@ class ContentPlatform {
             });
         }
 
-        // Listener for the "Generate Content" button
+        // --- "Generate Content" button ---
         const generateBtn = document.getElementById('generate-content-btn');
         if (generateBtn) {
             generateBtn.addEventListener('click', (e) => {
@@ -32,13 +43,108 @@ class ContentPlatform {
             });
         }
 
-        // Delegated listener for the "Create A/B Test" buttons
+        // --- Delegated listener for "Create A/B Test" buttons ---
         document.addEventListener('click', (e) => {
             if (e.target && e.target.classList.contains('create-ab-test-btn')) {
                 e.preventDefault();
                 this.handleCreateABTestClick(e.target);
             }
         });
+    }
+
+    // --- Tab Management ---
+
+    handleInitialTab() {
+        // On page load, check if a tab is specified in the URL hash
+        const initialTab = window.location.hash || '#train';
+        this.switchTab(initialTab);
+    }
+
+    switchTab(tabHash) {
+        // Hide all tab content panels
+        document.querySelectorAll('.tab-content').forEach(panel => {
+            panel.classList.add('hidden');
+        });
+
+        // Deactivate all tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Activate the selected tab and content
+        const activeTab = document.querySelector(`.tab-button[href="${tabHash}"]`);
+        const activePanel = document.querySelector(`${tabHash}-content`);
+
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+        if (activePanel) {
+            activePanel.classList.remove('hidden');
+        }
+
+        // Update the URL hash without jumping
+        history.pushState(null, null, tabHash);
+
+        // Fetch market data if that tab is selected and data hasn't been loaded yet
+        if (tabHash === '#market-data' && !this.marketDataLoaded) {
+            this.fetchMarketData();
+        }
+    }
+
+    // --- Market Data Methods ---
+
+    async fetchMarketData() {
+        this.marketDataLoaded = true; // Set flag to true to prevent re-fetching
+        const container = document.getElementById('market-data-container');
+
+        try {
+            const response = await fetch(`${this.apiBase}/market-data`);
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.displayMarketData(result.data);
+            } else {
+                throw new Error(result.error || 'Failed to fetch market data.');
+            }
+        } catch (error) {
+            console.error('Error fetching market data:', error);
+            container.innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded-md col-span-3">Error: ${error.message}</div>`;
+        }
+    }
+
+    displayMarketData(data) {
+        const container = document.getElementById('market-data-container');
+        const periodSpan = document.getElementById('market-data-period');
+
+        if (periodSpan && data.report_period) {
+            periodSpan.textContent = `Latest Data: ${data.report_period}`;
+        }
+
+        const formatChange = (change) => {
+            if (!change) return '<span class="text-gray-500">-</span>';
+            const isPositive = change.startsWith('+');
+            const color = isPositive ? 'text-green-600' : 'text-red-600';
+            const icon = isPositive ? 'fa-arrow-up' : 'fa-arrow-down';
+            return `<span class="${color}"><i class="fas ${icon}"></i> ${change}</span>`;
+        };
+
+        container.innerHTML = `
+            <div class="bg-gray-100 p-6 rounded-lg text-center">
+                <h3 class="text-sm font-medium text-gray-500">Average Price</h3>
+                <p class="mt-1 text-3xl font-semibold text-gray-900">$${data.average_price.toLocaleString()}</p>
+                <p class="mt-2 text-sm">${formatChange(data.average_price_change)}</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-lg text-center">
+                <h3 class="text-sm font-medium text-gray-500">Properties Sold</h3>
+                <p class="mt-1 text-3xl font-semibold text-gray-900">${data.properties_sold.toLocaleString()}</p>
+                <p class="mt-2 text-sm">${formatChange(data.properties_sold_change)}</p>
+            </div>
+            <div class="bg-gray-100 p-6 rounded-lg text-center">
+                <h3 class="text-sm font-medium text-gray-500">New Listings</h3>
+                <p class="mt-1 text-3xl font-semibold text-gray-900">${data.new_listings.toLocaleString()}</p>
+                <p class="mt-2 text-sm">${formatChange(data.new_listings_change)}</p>
+            </div>
+        `;
     }
 
     // --- Training Brand Voice Methods ---
@@ -175,7 +281,7 @@ class ContentPlatform {
         const payload = {
             test_name: `Test for "${baseContent.focus}"`,
             base_content: baseContent,
-            variation_types: ['hooks', 'cta_styles'], // We can customize this later
+            variation_types: ['hooks', 'cta_styles'],
             platform: 'instagram'
         };
 
@@ -188,8 +294,6 @@ class ContentPlatform {
 
             const result = await response.json();
             if (response.ok && result.success) {
-                // This uses the modal display function from ab-testing.js
-                // It assumes that file is loaded on the page.
                 if (window.abTesting && typeof window.abTesting.displayResultsModal === 'function') {
                     window.abTesting.displayResultsModal(result.data);
                 } else {
