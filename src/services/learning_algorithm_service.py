@@ -1,60 +1,58 @@
-from ..models.social_media import db, TrainingData
+# src/services/learning_algorithm_service.py
+
 import random
+from src.models.social_media import db, TrainingData
+# Import our new SeoService!
+from src.services.seo_service import seo_service
 
 class LearningAlgorithmService:
     """
-    Service for generating content recommendations based on user-provided training data.
+    Service for learning from user-provided training data and generating
+    new, SEO-optimized content recommendations.
     """
-    
-    def generate_content_recommendations(self, user_id, content_type, platform):
+
+    def generate_content_recommendations(self, topic: str, content_type: str) -> dict:
         """
-        Generates new content by using the user's training data as a foundation.
+        Generates content recommendations based on a topic and learned brand voice.
         """
-        # 1. Fetch relevant training data from the database for the specified user and content type.
-        training_posts = db.session.query(TrainingData).filter_by(
-            user_id=user_id, 
-            post_type=content_type
-        ).all()
+        # Fetch relevant training data from the database
+        training_examples = TrainingData.query.filter_by(post_type=content_type).limit(10).all()
 
-        # 2. If no specific training data is found, get some general posts from the user.
-        if not training_posts:
-            training_posts = db.session.query(TrainingData).filter_by(user_id=user_id).limit(10).all()
-
-        # 3. If there is still no data at all, return a helpful message.
-        if not training_posts:
-            return [{
-                "template_id": "no_data_01",
-                "generated_content": "I need more examples to learn your style! Please use the 'Train Brand Voice' feature to add at least 5-10 of your past posts.",
-                "reason": "No training data found in the AI Memory."
-            }]
-
-        # 4. This is where the "AI" logic happens. For now, we will use a simple but effective strategy:
-        #    - Pick a random training post.
-        #    - Create a few new variations based on its content.
-        
-        chosen_post = random.choice(training_posts)
-        base_content = chosen_post.content
-
-        # Simple templates for generating variations
-        recommendations = [
-            {
-                "template_id": "variation_A",
-                "generated_content": f"Here's a new take on a successful post: \"{base_content}\" - What if we focused more on the call to action?",
-                "reason": f"Based on your successful '{chosen_post.post_type}' post."
-            },
-            {
-                "template_id": "variation_B",
-                "generated_content": f"Inspired by your style: \"{base_content}\" - Let's try making the opening hook more emotional.",
-                "reason": f"Learned from post ID {chosen_post.id}."
-            },
-            {
-                "template_id": "variation_C",
-                "generated_content": f"Let's try this angle: \"{base_content}\" - We could also add some relevant market stats to this.",
-                "reason": "Adapting your proven content style."
+        if not training_examples:
+            return {
+                "success": False,
+                "error": f"Not enough training data for content type '{content_type}'. Please add more examples."
             }
-        ]
-        
-        return recommendations
 
-# Create a single, global instance of the service that our routes can use.
+        recommendations = []
+        # Generate 3 recommendations
+        for i in range(3):
+            # Pick a random training example to use as a base
+            base_example = random.choice(training_examples)
+            
+            # Create a new piece of content (this is a simplified generation logic)
+            focus = f"Variation {i+1} based on your '{base_example.post_type}' style"
+            
+            # A simple generation rule: combine the user's topic with the style of a past post.
+            # A more advanced AI would use a language model here.
+            new_content = f"{topic}.\n\n(Inspired by your post: '{base_example.content[:50]}...')"
+
+            # --- THIS IS THE NEW PART ---
+            # Analyze the generated content using our new SEO service
+            seo_analysis = seo_service.analyze_content(new_content)
+            
+            recommendations.append({
+                "content": new_content,
+                "focus": focus,
+                "hashtags": ["#WindsorRealEstate", f"#{content_type}"], # Placeholder hashtags
+                "seo_score": seo_analysis.get('score'),
+                "seo_recommendations": seo_analysis.get('recommendations')
+            })
+
+        return {
+            "success": True,
+            "recommendations": recommendations
+        }
+
+# Create a single, global instance of the service
 learning_algorithm_service = LearningAlgorithmService()
