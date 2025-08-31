@@ -3,227 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Automation - Windsor-Essex Real Estate</title>
+    <title>Content Management - Windsor-Essex Real Estate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Link to your new CSS file here if you create one -->
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen">
-        <!-- Header -->
         <header class="bg-white shadow-sm border-b">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
-                    <div class="flex items-center space-x-4">
-                        <a href="/" class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-arrow-left"></i> Back to Dashboard
-                        </a>
-                        <h1 class="text-2xl font-bold text-gray-900">Social Media Automation</h1>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm text-gray-500">Windsor-Essex Real Estate</span>
-                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900">Content Platform</h1>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <!-- New Simplified Tabs -->
-<nav class="flex space-x-8" aria-label="Tabs">
-    <button onclick="showTab('create')" id="create-tab" 
-            class="tab-button active whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-        <i class="fas fa-pen-to-square mr-2"></i>Train Brand Voice
-    </button>
-    <button onclick="showTab('posts')" id="posts-tab" 
-            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-        <i class="fas fa-list mr-2"></i>Manage Content
-    </button>
-    <button onclick="showTab('analytics')" id="analytics-tab" 
-            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-        <i class="fas fa-chart-bar mr-2"></i>Analytics
-    </button>
-</nav>
-
-                    </button>
-                                          <i class="fas fa-info-circle mr-2"></i>Setup Instructions
-                    </h3>
-                    <div class="space-y-3 text-blue-800">
-                        <p><strong>1. Facebook Page Required:</strong> You need a Facebook Page connected to your Instagram Business account.</p>
-                        <p><strong>2. Business Verification:</strong> Your Facebook account may need business verification for posting automation.</p>
-                        <p><strong>3. Permissions:</strong> Grant all requested permissions for full functionality.</p>
-                        <p><strong>4. Rate Limits:</strong> Instagram allows up to 100 API posts per 24-hour period.</p>
-                    </div>
-                </div>
+            <div class="mb-8">
+                <nav class="flex space-x-8" aria-label="Tabs">
+                    <a href="#train" class="tab-button active whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600">
+                        <i class="fas fa-pen-to-square mr-2"></i>Train Brand Voice
+                    </a>
+                    <!-- Add other tabs like "Content Generation" or "A/B Testing" here later -->
+                </nav>
             </div>
 
-            <!-- Create Post Tab -->
-            <div id="create-content" class="tab-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Post Creation Form -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-6">Create New Post</h2>
+            <!-- Train Brand Voice Tab -->
+            <div id="train-content">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-2">Train The AI With Your Content</h2>
+                        <p class="text-sm text-gray-600 mb-6">Add examples of your past posts. The more examples, the better the AI will learn your brand voice.</p>
                         
-                        <form id="create-post-form" class="space-y-6">
-                            <!-- Account Selection -->
+                        <form id="train-voice-form" class="space-y-6">
                             <div>
-                                <label for="post-account-select" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Select Account
-                                </label>
-                                <select id="post-account-select" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Account</option>
+                                <label for="post-content-input" class="block text-sm font-medium text-gray-700 mb-2">Post Text</label>
+                                <textarea id="post-content-input" rows="6" placeholder="Paste the text from one of your past successful posts here..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="post-image-url" class="block text-sm font-medium text-gray-700 mb-2">Image URL (Optional )</label>
+                                <input type="url" id="post-image-url" placeholder="Paste the URL of the image used in the post" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="post-type-select" class="block text-sm font-medium text-gray-700 mb-2">Type of Post</label>
+                                <select id="post-type-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="listing">New Listing</option>
+                                    <option value="sold">Just Sold</option>
+                                    <option value="market_update">Market Update</option>
+                                    <option value="community">Community Spotlight</option>
+                                    <option value="testimonial">Client Testimonial</option>
+                                    <option value="general">General Engagement</option>
                                 </select>
                             </div>
-
-                          <!-- Train Brand Voice Tab -->
-<div id="create-content" class="tab-content">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Manual Content Upload Form -->
-        <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">Train The AI With Your Content</h2>
-            <p class="text-sm text-gray-600 mb-6">
-                Add examples of your past social media posts here. The more examples you provide, the better the AI will learn your unique brand voice and style.
-            </p>
-            
-            <form id="train-voice-form" class="space-y-6">
-                <!-- Post Content -->
-                <div>
-                    <label for="post-content-input" class="block text-sm font-medium text-gray-700 mb-2">
-                        Post Text
-                    </label>
-                    <textarea id="post-content-input" rows="6" 
-                              placeholder="Paste the text from one of your past successful posts here..."
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-
-                <!-- Image URL (Optional) -->
-                <div>
-                    <label for="post-image-url" class="block text-sm font-medium text-gray-700 mb-2">
-                        Image URL (Optional)
-                    </label>
-                    <input type="url" id="post-image-url" 
-                           placeholder="Paste the URL of the image used in the post"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="mt-1 text-xs text-gray-500">
-                        Providing an image URL helps the AI understand the context of your visual style.
-                    </p>
-                </div>
-
-                <!-- Post Type -->
-                <div>
-                    <label for="post-type-select" class="block text-sm font-medium text-gray-700 mb-2">
-                        Type of Post
-                    </label>
-                    <select id="post-type-select" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="listing">New Listing</option>
-                        <option value="sold">Just Sold</option>
-                        <option value="market_update">Market Update</option>
-                        <option value="community">Community Spotlight</option>
-                        <option value="testimonial">Client Testimonial</option>
-                        <option value="general">General Engagement</option>
-                    </select>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="button" id="add-content-btn" 
-                        class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-plus mr-2"></i>Add Content to AI Memory
-                </button>
-            </form>
-        </div>
-
-        <!-- Instructions & Tips -->
-        <div class="bg-gray-100 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>How It Works
-            </h3>
-            <div class="space-y-4 text-gray-700">
-                <div>
-                    <h4 class="font-semibold">1. Add Your Best Posts</h4>
-                    <p class="text-sm">Find 5-10 of your most successful past posts. Add them one by one using the form on the left.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold">2. Categorize Correctly</h4>
-                    <p class="text-sm">Select the correct "Type of Post". This teaches the AI what a "New Listing" post looks like versus a "Testimonial".</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold">3. Generate New Content</h4>
-                    <p class="text-sm">Once you've added enough examples, go to the "Content Generator" page. The AI will now use your style to create new, on-brand posts.</p>
-                </div>
-                <div class="mt-4 pt-4 border-t">
-                    <h4 class="font-semibold">What makes a good example?</h4>
-                    <ul class="list-disc list-inside text-sm mt-2 space-y-1">
-                        <li>Posts that got high engagement.</li>
-                        <li>Content that truly represents your brand.</li>
-                        <li>A variety of post types.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-2xl text-green-500"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500">Published</p>
-                                <p class="text-2xl font-semibold text-gray-900" id="published-posts-count">-</p>
-                            </div>
-                        </div>
+                            <button type="submit" id="add-content-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Add Content to AI Memory
+                            </button>
+                        </form>
                     </div>
-
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-clock text-2xl text-yellow-500"></i>
+                    <div class="bg-gray-100 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4"><i class="fas fa-lightbulb mr-2 text-yellow-500"></i>How It Works</h3>
+                        <div class="space-y-4 text-gray-700">
+                            <div>
+                                <h4 class="font-semibold">1. Add Your Best Posts</h4>
+                                <p class="text-sm">Add 5-10 of your most successful past posts, one by one.</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500">Scheduled</p>
-                                <p class="text-2xl font-semibold text-gray-900" id="scheduled-posts-count">-</p>
+                            <div>
+                                <h4 class="font-semibold">2. Categorize Correctly</h4>
+                                <p class="text-sm">Select the correct "Type of Post" to teach the AI context.</p>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500">Failed</p>
-                                <p class="text-2xl font-semibold text-gray-900" id="failed-posts-count">-</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Coming Soon -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-center py-12">
-                        <i class="fas fa-chart-line text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Advanced Analytics Coming Soon</h3>
-                        <p class="text-gray-500 mb-6">
-                            Detailed engagement metrics, reach analytics, and performance insights will be available in the next update.
-                        </p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <i class="fas fa-heart text-red-400 mb-2"></i>
-                                <p class="font-medium">Engagement Tracking</p>
-                                <p>Likes, comments, shares</p>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <i class="fas fa-eye text-blue-400 mb-2"></i>
-                                <p class="font-medium">Reach Analytics</p>
-                                <p>Impressions, reach, frequency</p>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <i class="fas fa-clock text-green-400 mb-2"></i>
-                                <p class="font-medium">Best Times</p>
-                                <p>Optimal posting schedules</p>
+                            <div>
+                                <h4 class="font-semibold">3. Generate New Content</h4>
+                                <p class="text-sm">The AI will now use your style to create new, on-brand posts on the generator page.</p>
                             </div>
                         </div>
                     </div>
@@ -232,49 +82,8 @@
         </main>
     </div>
 
-    <!-- Scripts -->
-    <script src="/js/social-media-automation.js"></script>
-    <script>
-        // Tab switching functionality
-        function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
-                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName + '-content').classList.remove('hidden');
-            
-            // Add active class to selected tab
-            const activeTab = document.getElementById(tabName + '-tab');
-            activeTab.classList.add('active', 'border-blue-500', 'text-blue-600');
-            activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            
-            // Load data for specific tabs
-            if (tabName === 'posts') {
-                socialMediaAutomation.loadPosts();
-            } else if (tabName === 'create') {
-                socialMediaAutomation.populateAccountSelect();
-            }
-        }
-
-        // Initialize default tab styles
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.tab-button').forEach(button => {
-                if (!button.classList.contains('active')) {
-                    button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-                } else {
-                    button.classList.add('border-blue-500', 'text-blue-600');
-                }
-            });
-        });
-    </script>
+    <!-- SCRIPT LOADING -->
+    <script src="/static/js/social-media-automation.js"></script>
+    <script src="/static/js/ab-testing.js"></script>
 </body>
 </html>
-
