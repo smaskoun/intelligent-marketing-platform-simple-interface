@@ -299,19 +299,17 @@ class SocialMediaAutomation {
         const inputs = [
             'post-content-input',
             'post-image-url',
-            'post-image-prompt',
-            'post-scheduled-time'
-        ];
+           // Load data for specific tabs
+if (tabName === 'posts') {
+    socialMediaAutomation.loadPosts();
+}
 
-        inputs.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.value = '';
-            }
-        });
 
-        const imagePreview = document.getElementById('generated-image-preview');
-        if (imagePreview) {
+      // Initialize by showing the default tab
+document.addEventListener('DOMContentLoaded', () => {
+    showTab('create');
+});
+
             imagePreview.innerHTML = '';
         }
     }
