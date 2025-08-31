@@ -1,60 +1,57 @@
-import os
-import sys
-# This line is important for your project's structure, so we keep it.
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# src/main.py
 
+import os
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
-# --- 1. UPDATED MODEL IMPORT ---
-# We now import the 'db' object from our new, clean models file.
-from src.models.social_media import db
+# --- CORRECTED IMPORTS ---
+# We use a single dot (.) to tell Python to import from the current package (the 'src' folder).
+from .models.social_media import db
+from .routes.brand_voice import brand_voice_bp
+from .routes.learning_algorithm_routes import learning_algorithm_bp
+from .routes.ab_testing_routes import ab_testing_bp
+from .routes.market_data_routes import market_data_bp
+# -------------------------
 
-# --- 2. UPDATED BLUEPRINT IMPORTS ---
-# We only import the blueprints that are part of our new, refactored application.
-# For now, that is just the brand_voice blueprint. We will add the A/B testing one later.
-from src.routes.brand_voice import brand_voice_bp
-# We will also keep the market_data_routes for now as it seems independent.
-from src.routes.market_data_routes import market_data_bp
-
-
-# --- Application Factory Pattern ---
-# It's best practice to create the app inside a function.
 def create_app():
-    """Creates and configures the Flask application."""
-    
+    """Application Factory Pattern"""
     app = Flask(__name__, static_folder='static')
-    app.config['SECRET_KEY'] = 'a-new-secret-key-is-better' # It's good practice to change default keys.
-
-    # Enable CORS for all routes
-    CORS(app)
-
-    # --- Database Configuration ---
-    # This path is corrected to work from within the 'src' directory.
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database', 'app.db')}"
+    app.config['SECRET_KEY'] = 'a_very_secret_key_that_should_be_changed'
+    
+    # Configure the database URI
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database', 'app.db')
+    os.makedirs(os.path.dirname(db_path), exist_ok=True) # Ensure the database directory exists
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Initialize extensions
     db.init_app(app)
+    CORS(app, origins="*")
 
-    # --- 3. REGISTER CLEANED BLUEPRINTS ---
-    # We only register the blueprints we are actively using.
-    app.register_blueprint(brand_voice_bp) # From our new brand_voice.py
-    app.register_blueprint(market_data_bp) # From your existing market_data_routes.py
+    # Register blueprints
+    app.register_blueprint(brand_voice_bp, url_prefix='/api/brand-voice')
+    app.register_blueprint(learning_algorithm_bp, url_prefix='/api/learning')
+    app.register_blueprint(ab_testing_bp, url_prefix='/api/ab-testing')
+    app.register_blueprint(market_data_bp, url_prefix='/api/market-data')
 
-    # --- 4. SIMPLIFIED ROUTE TO SERVE THE FRONTEND ---
-    # This single route will serve your main HTML page.
-    @app.route('/')
-    def serve_index():
-        return send_from_directory(app.static_folder, 'social-media-automation.html')
-
-    # This block creates the database tables (e.g., 'training_data') if they don't exist.
     with app.app_context():
+        # Create database tables if they don't exist
         db.create_all()
-        
+
+    # --- Static File Serving ---
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve(path):
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        else:
+            return send_from_directory(app.static_folder, 'social-media-automation.html')
+
     return app
 
-# --- Main execution block ---
+# This part runs when you execute the script directly
 if __name__ == '__main__':
     app = create_app()
-    # Use port 5001 to avoid potential conflicts with other services like React dev server
-    app.run(host='0.0.0.0', port=5001, debug=True)
-
+    # Use the PORT environment variable provided by Render, default to 5001 for local dev
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port)
