@@ -28,52 +28,24 @@
 
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- Tabs -->
-            <div class="mb-8">
-                <nav class="flex space-x-8" aria-label="Tabs">
-                    <button onclick="showTab('accounts')" id="accounts-tab" 
-                            class="tab-button active whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                        <i class="fas fa-link mr-2"></i>Connected Accounts
-                    </button>
-                    <button onclick="showTab('create')" id="create-tab" 
-                            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                        <i class="fas fa-plus mr-2"></i>Create Post
-                    </button>
-                    <button onclick="showTab('posts')" id="posts-tab" 
-                            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                        <i class="fas fa-list mr-2"></i>Manage Posts
-                    </button>
-                    <button onclick="showTab('analytics')" id="analytics-tab" 
-                            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                        <i class="fas fa-chart-bar mr-2"></i>Analytics
-                    </button>
-                </nav>
-            </div>
+          <!-- New Simplified Tabs -->
+<nav class="flex space-x-8" aria-label="Tabs">
+    <button onclick="showTab('create')" id="create-tab" 
+            class="tab-button active whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+        <i class="fas fa-pen-to-square mr-2"></i>Train Brand Voice
+    </button>
+    <button onclick="showTab('posts')" id="posts-tab" 
+            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+        <i class="fas fa-list mr-2"></i>Manage Content
+    </button>
+    <button onclick="showTab('analytics')" id="analytics-tab" 
+            class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+        <i class="fas fa-chart-bar mr-2"></i>Analytics
+    </button>
+</nav>
 
-            <!-- Connected Accounts Tab -->
-            <div id="accounts-content" class="tab-content">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold text-gray-900">Connected Social Media Accounts</h2>
-                        <button id="connect-social-account" 
-                                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fab fa-facebook mr-2"></i>Connect Facebook/Instagram
-                        </button>
-                    </div>
-                    
-                    <div id="connected-accounts-list">
-                        <!-- Accounts will be loaded here -->
-                        <div class="text-center py-8">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                            <p class="mt-2 text-gray-500">Loading accounts...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Setup Instructions -->
-                <div class="mt-8 bg-blue-50 rounded-lg p-6">
-                    <h3 class="text-lg font-semibold text-blue-900 mb-4">
-                        <i class="fas fa-info-circle mr-2"></i>Setup Instructions
+                    </button>
+                                          <i class="fas fa-info-circle mr-2"></i>Setup Instructions
                     </h3>
                     <div class="space-y-3 text-blue-800">
                         <p><strong>1. Facebook Page Required:</strong> You need a Facebook Page connected to your Instagram Business account.</p>
@@ -103,147 +75,94 @@
                                 </select>
                             </div>
 
-                            <!-- Post Content -->
-                            <div>
-                                <label for="post-content-input" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Post Content
-                                </label>
-                                <textarea id="post-content-input" rows="4" 
-                                          placeholder="Write your post content here... Use #hashtags for better reach!"
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                            </div>
+                          <!-- Train Brand Voice Tab -->
+<div id="create-content" class="tab-content">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Manual Content Upload Form -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Train The AI With Your Content</h2>
+            <p class="text-sm text-gray-600 mb-6">
+                Add examples of your past social media posts here. The more examples you provide, the better the AI will learn your unique brand voice and style.
+            </p>
+            
+            <form id="train-voice-form" class="space-y-6">
+                <!-- Post Content -->
+                <div>
+                    <label for="post-content-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        Post Text
+                    </label>
+                    <textarea id="post-content-input" rows="6" 
+                              placeholder="Paste the text from one of your past successful posts here..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
 
-                            <!-- Image Generation -->
-                            <div>
-                                <label for="image-prompt-input" class="block text-sm font-medium text-gray-700 mb-2">
-                                    AI Image Prompt (Optional)
-                                </label>
-                                <div class="flex space-x-2">
-                                    <input type="text" id="image-prompt-input" 
-                                           placeholder="Describe the image you want to generate..."
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <button type="button" id="generate-image-btn" 
-                                            class="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors">
-                                        <i class="fas fa-magic mr-1"></i>Generate
-                                    </button>
-                                </div>
-                                <p class="mt-1 text-xs text-gray-500">
-                                    Example: "Professional real estate agent showing a modern house to clients"
-                                </p>
-                            </div>
+                <!-- Image URL (Optional) -->
+                <div>
+                    <label for="post-image-url" class="block text-sm font-medium text-gray-700 mb-2">
+                        Image URL (Optional)
+                    </label>
+                    <input type="url" id="post-image-url" 
+                           placeholder="Paste the URL of the image used in the post"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">
+                        Providing an image URL helps the AI understand the context of your visual style.
+                    </p>
+                </div>
 
-                            <!-- Platform Selection -->
-                            <div>
-                                <label for="platform-select" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Optimize for Platform
-                                </label>
-                                <select id="platform-select" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="instagram">Instagram</option>
-                                    <option value="facebook">Facebook</option>
-                                </select>
-                            </div>
+                <!-- Post Type -->
+                <div>
+                    <label for="post-type-select" class="block text-sm font-medium text-gray-700 mb-2">
+                        Type of Post
+                    </label>
+                    <select id="post-type-select" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="listing">New Listing</option>
+                        <option value="sold">Just Sold</option>
+                        <option value="market_update">Market Update</option>
+                        <option value="community">Community Spotlight</option>
+                        <option value="testimonial">Client Testimonial</option>
+                        <option value="general">General Engagement</option>
+                    </select>
+                </div>
 
-                            <!-- Manual Image URL -->
-                            <div>
-                                <label for="post-image-url" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Image URL (Optional)
-                                </label>
-                                <input type="url" id="post-image-url" 
-                                       placeholder="https://example.com/image.jpg"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
+                <!-- Submit Button -->
+                <button type="button" id="add-content-btn" 
+                        class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Add Content to AI Memory
+                </button>
+            </form>
+        </div>
 
-                            <!-- Scheduling -->
-                            <div>
-                                <label for="post-scheduled-time" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Schedule Post (Optional)
-                                </label>
-                                <input type="datetime-local" id="post-scheduled-time" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <p class="mt-1 text-xs text-gray-500">
-                                    Leave empty to create as draft for manual approval
-                                </p>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <button type="button" id="create-post-btn" 
-                                    class="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
-                                <i class="fas fa-plus mr-2"></i>Create Post
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Image Preview -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Image Preview</h3>
-                        <div id="generated-image-preview" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                            <i class="fas fa-image text-4xl text-gray-400 mb-4"></i>
-                            <p class="text-gray-500">Generated images will appear here</p>
-                        </div>
-
-                        <!-- AI Image Tips -->
-                        <div class="mt-6 bg-yellow-50 rounded-lg p-4">
-                            <h4 class="font-semibold text-yellow-800 mb-2">
-                                <i class="fas fa-lightbulb mr-1"></i>AI Image Tips
-                            </h4>
-                            <ul class="text-sm text-yellow-700 space-y-1">
-                                <li>• Be specific about style: "professional photography", "modern", "bright"</li>
-                                <li>• Include context: "real estate office", "home exterior", "agent meeting"</li>
-                                <li>• Mention lighting: "natural lighting", "golden hour", "well-lit"</li>
-                                <li>• Add quality terms: "high resolution", "sharp focus", "commercial quality"</li>
-                            </ul>
-                        </div>
-                    </div>
+        <!-- Instructions & Tips -->
+        <div class="bg-gray-100 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>How It Works
+            </h3>
+            <div class="space-y-4 text-gray-700">
+                <div>
+                    <h4 class="font-semibold">1. Add Your Best Posts</h4>
+                    <p class="text-sm">Find 5-10 of your most successful past posts. Add them one by one using the form on the left.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold">2. Categorize Correctly</h4>
+                    <p class="text-sm">Select the correct "Type of Post". This teaches the AI what a "New Listing" post looks like versus a "Testimonial".</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold">3. Generate New Content</h4>
+                    <p class="text-sm">Once you've added enough examples, go to the "Content Generator" page. The AI will now use your style to create new, on-brand posts.</p>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <h4 class="font-semibold">What makes a good example?</h4>
+                    <ul class="list-disc list-inside text-sm mt-2 space-y-1">
+                        <li>Posts that got high engagement.</li>
+                        <li>Content that truly represents your brand.</li>
+                        <li>A variety of post types.</li>
+                    </ul>
                 </div>
             </div>
-
-            <!-- Manage Posts Tab -->
-            <div id="posts-content" class="tab-content hidden">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold text-gray-900">Manage Posts</h2>
-                        <div class="flex space-x-2">
-                            <select id="posts-filter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                                <option value="">All Posts</option>
-                                <option value="draft">Drafts</option>
-                                <option value="approved">Approved</option>
-                                <option value="scheduled">Scheduled</option>
-                                <option value="posted">Posted</option>
-                                <option value="failed">Failed</option>
-                            </select>
-                            <button onclick="socialMediaAutomation.loadPosts()" 
-                                    class="px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-sm">
-                                <i class="fas fa-refresh mr-1"></i>Refresh
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="posts-list">
-                        <!-- Posts will be loaded here -->
-                        <div class="text-center py-8">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                            <p class="mt-2 text-gray-500">Loading posts...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div id="analytics-content" class="tab-content hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Stats Cards -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-file-alt text-2xl text-blue-500"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500">Total Posts</p>
-                                <p class="text-2xl font-semibold text-gray-900" id="total-posts-count">-</p>
-                            </div>
-                        </div>
-                    </div>
+        </div>
+    </div>
+</div>
 
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex items-center">
