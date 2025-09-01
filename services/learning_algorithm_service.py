@@ -1,9 +1,10 @@
-# src/services/learning_algorithm_service.py
+# services/learning_algorithm_service.py
 
 import random
-from src.models.social_media import db, TrainingData
-# Import our new SeoService!
-from src.services.seo_service import seo_service
+# --- CORRECTED IMPORTS ---
+from models.social_media import db, TrainingData
+from services.seo_service import seo_service
+# -------------------------
 
 class LearningAlgorithmService:
     """
@@ -11,12 +12,12 @@ class LearningAlgorithmService:
     new, SEO-optimized content recommendations.
     """
 
-    def generate_content_recommendations(self, topic: str, content_type: str) -> dict:
+    def generate_content_recommendations(self, user_id: str, content_type: str, platform: str) -> dict:
         """
         Generates content recommendations based on a topic and learned brand voice.
         """
-        # Fetch relevant training data from the database
-        training_examples = TrainingData.query.filter_by(post_type=content_type).limit(10).all()
+        # Fetch relevant training data from the database for the specific user
+        training_examples = TrainingData.query.filter_by(user_id=user_id, post_type=content_type).limit(10).all()
 
         if not training_examples:
             return {
@@ -35,6 +36,8 @@ class LearningAlgorithmService:
             
             # A simple generation rule: combine the user's topic with the style of a past post.
             # A more advanced AI would use a language model here.
+            # For now, we'll just create a placeholder topic based on the content type.
+            topic = f"A new post about {content_type.replace('_', ' ')}"
             new_content = f"{topic}.\n\n(Inspired by your post: '{base_example.content[:50]}...')"
 
             # --- THIS IS THE NEW PART ---
@@ -49,10 +52,7 @@ class LearningAlgorithmService:
                 "seo_recommendations": seo_analysis.get('recommendations')
             })
 
-        return {
-            "success": True,
-            "recommendations": recommendations
-        }
+        return recommendations # The route will handle the success wrapper
 
 # Create a single, global instance of the service
 learning_algorithm_service = LearningAlgorithmService()
