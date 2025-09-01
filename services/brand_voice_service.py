@@ -1,5 +1,9 @@
-from ..models import db
-from ..models.social_media import TrainingData
+# services/brand_voice_service.py
+
+# --- CORRECTED IMPORTS ---
+# We now import directly from the 'models' package, which is at the same level.
+from models.social_media import db, TrainingData
+# -------------------------
 
 class BrandVoiceService:
     def add_training_data(self, user_id, content, image_url, post_type):
@@ -23,14 +27,9 @@ class BrandVoiceService:
             # Commit the session to permanently save the new row in the database
             db.session.commit()
 
-            # Return a simple dictionary with the new entry's details.
-            # This can be useful for the frontend or for logging.
-            return {
-                "id": new_training_entry.id,
-                "content": new_training_entry.content,
-                "post_type": new_training_entry.post_type,
-                "created_at": new_training_entry.created_at.isoformat()
-            }
+            # Return the new object itself. The route will handle converting it to JSON.
+            return new_training_entry
+
         except Exception as e:
             # If any error occurs during the database operation...
             # Roll back the changes to ensure the database remains in a consistent state.
@@ -43,3 +42,5 @@ class BrandVoiceService:
             # knows something went wrong and can return a 500 error.
             raise e
 
+# Create a single, global instance of the service that can be imported elsewhere
+brand_voice_service = BrandVoiceService()
