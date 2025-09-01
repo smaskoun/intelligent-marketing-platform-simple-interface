@@ -17,12 +17,15 @@ class LearningAlgorithmService:
         # Fetch relevant training data from the database for the specific user
         training_examples = TrainingData.query.filter_by(user_id=user_id, post_type=content_type).limit(10).all()
 
+        # --- THIS IS THE FIX ---
+        # If there is no training data for this specific content type,
+        # return a helpful error message that the frontend can display.
         if not training_examples:
-            # --- THIS IS THE FIX ---
-            # If there's no data, we must still return a dictionary with a 'recommendations' key
-            # that holds an empty list. This prevents the ".map is not a function" error.
-            return {"recommendations": []}
-            # ----------------------
+            return {
+                "success": False,
+                "error": f"No training data found for '{content_type}'. Please add examples in the 'Train Brand Voice' tab first."
+            }
+        # ----------------------
 
         recommendations = []
         # Generate 3 recommendations
@@ -41,10 +44,11 @@ class LearningAlgorithmService:
                 "seo_recommendations": seo_analysis.get('recommendations')
             })
 
-        # --- THIS IS ALSO PART OF THE FIX ---
-        # We now return the list directly, as the route will handle the wrapper.
-        return recommendations
-        # ------------------------------------
+        # If everything is successful, return the recommendations.
+        return {
+            "success": True,
+            "recommendations": recommendations
+        }
 
 # Create a single, global instance of the service
 learning_algorithm_service = LearningAlgorithmService()
