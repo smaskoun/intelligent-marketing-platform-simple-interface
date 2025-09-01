@@ -1,10 +1,8 @@
 # services/learning_algorithm_service.py
 
 import random
-# --- CORRECTED IMPORTS ---
 from models.social_media import db, TrainingData
 from services.seo_service import seo_service
-# -------------------------
 
 class LearningAlgorithmService:
     """
@@ -20,39 +18,33 @@ class LearningAlgorithmService:
         training_examples = TrainingData.query.filter_by(user_id=user_id, post_type=content_type).limit(10).all()
 
         if not training_examples:
-            return {
-                "success": False,
-                "error": f"Not enough training data for content type '{content_type}'. Please add more examples."
-            }
+            # --- THIS IS THE FIX ---
+            # If there's no data, we must still return a dictionary with a 'recommendations' key
+            # that holds an empty list. This prevents the ".map is not a function" error.
+            return {"recommendations": []}
+            # ----------------------
 
         recommendations = []
         # Generate 3 recommendations
         for i in range(3):
-            # Pick a random training example to use as a base
             base_example = random.choice(training_examples)
-            
-            # Create a new piece of content (this is a simplified generation logic)
             focus = f"Variation {i+1} based on your '{base_example.post_type}' style"
-            
-            # A simple generation rule: combine the user's topic with the style of a past post.
-            # A more advanced AI would use a language model here.
-            # For now, we'll just create a placeholder topic based on the content type.
             topic = f"A new post about {content_type.replace('_', ' ')}"
             new_content = f"{topic}.\n\n(Inspired by your post: '{base_example.content[:50]}...')"
-
-            # --- THIS IS THE NEW PART ---
-            # Analyze the generated content using our new SEO service
             seo_analysis = seo_service.analyze_content(new_content)
             
             recommendations.append({
                 "content": new_content,
                 "focus": focus,
-                "hashtags": ["#WindsorRealEstate", f"#{content_type}"], # Placeholder hashtags
+                "hashtags": ["#WindsorRealEstate", f"#{content_type}"],
                 "seo_score": seo_analysis.get('score'),
                 "seo_recommendations": seo_analysis.get('recommendations')
             })
 
-        return recommendations # The route will handle the success wrapper
+        # --- THIS IS ALSO PART OF THE FIX ---
+        # We now return the list directly, as the route will handle the wrapper.
+        return recommendations
+        # ------------------------------------
 
 # Create a single, global instance of the service
 learning_algorithm_service = LearningAlgorithmService()
