@@ -1,132 +1,63 @@
-// static/js/social-media-automation.js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Marketing Platform</title>
+    
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="/static/assets/style.css">
+    
+    <!-- Using Tailwind CSS for quick styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Link to your A/B testing module so it's available globally -->
+    <script src="/static/js/ab-testing.js"></script>
 
-class SocialMediaAutomation {
-    constructor() {
-        this.apiBase = '/api';
-        this.currentUser = 'default_user';
-        this.init();
-    }
+</head>
+<body class="bg-gray-100 p-8 font-sans">
 
-    init() {
-        this.setupEventListeners();
-    }
+    <div class="max-w-4xl mx-auto">
+        <header class="flex items-center mb-6">
+            <img src="/static/assets/Hom Logo.png" alt="Logo" class="h-10 w-10 mr-4">
+            <h1 class="text-3xl font-bold text-gray-800">Intelligent Marketing Platform</h1>
+        </header>
 
-    setupEventListeners() {
-        document.getElementById('add-content-btn')?.addEventListener('click', () => this.addTrainingContent());
-        document.getElementById('generate-content-btn')?.addEventListener('click', () => this.generateContent());
-        document.getElementById('market-data-btn')?.addEventListener('click', () => this.loadMarketData());
+        <!-- Section 1: Train Brand Voice -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4">1. Train Your Brand Voice</h2>
+            <form id="train-voice-form" class="space-y-4">
+                <textarea id="post-content-input" class="w-full p-2 border rounded-md" placeholder="Enter post text, article, or any brand content..."></textarea>
+                <input type="text" id="post-image-url" class="w-full p-2 border rounded-md" placeholder="Image URL (optional )">
+                <select id="post-type-select" class="w-full p-2 border rounded-md">
+                    <option value="tweet">Tweet</option>
+                    <option value="linkedin_post">LinkedIn Post</option>
+                    <option value="blog_post">Blog Post</option>
+                </select>
+                <button type="button" id="add-content-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add to AI Memory</button>
+            </form>
+        </div>
 
-        // Add listener for A/B test buttons that appear after content generation
-        document.getElementById('content-results')?.addEventListener('click', (e) => {
-            if (e.target && e.target.classList.contains('create-ab-test-btn')) {
-                this.handleCreateABTest(e.target);
-            }
-        });
-    }
-
-    // --- TRAINING VOICE ---
-    async addTrainingContent() {
-        const content = document.getElementById('post-content-input').value;
-        const imageUrl = document.getElementById('post-image-url').value;
-        const postType = document.getElementById('post-type-select').value;
-
-        if (!content.trim()) {
-            this.showNotification('Post text cannot be empty.', 'error');
-            return;
-        }
-
-        this.showNotification('Adding content to AI memory...', 'info');
-
-        try {
-            const response = await fetch(`${this.apiBase}/brand-voice/train`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: this.currentUser,
-                    content: content,
-                    image_url: imageUrl,
-                    post_type: postType
-                }),
-            });
-
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error);
-
-            this.showNotification('Successfully added content!', 'success');
-            document.getElementById('train-voice-form').reset();
-        } catch (error) {
-            this.showNotification(`Error: ${error.message}`, 'error');
-        }
-    }
-
-    // --- CONTENT GENERATION ---
-    async generateContent() {
-        const topic = document.getElementById('content-topic').value;
-        // --- THIS IS THE FIX ---
-        const contentType = document.getElementById('content-type-select').value;
-        // ----------------------
-        const resultsDiv = document.getElementById('content-results');
-        
-        resultsDiv.innerHTML = `<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div><p class="mt-2 text-gray-500">Generating ideas...</p></div>`;
-
-        try {
-            // --- THIS IS ALSO THE FIX ---
-            // The parameter name must match what the backend route expects ('type').
-            const response = await fetch(`${this.apiBase}/learning/content-recommendations?topic=${encodeURIComponent(topic)}&type=${encodeURIComponent(contentType)}`);
-            // --------------------------
-            
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error);
-
-            this.displayContentResults(result.recommendations);
-        } catch (error) {
-            resultsDiv.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-md"><strong>Error:</strong> ${error.message}</div>`;
-        }
-    }
-
-    displayContentResults(recommendations) {
-        const resultsDiv = document.getElementById('content-results');
-        if (!recommendations || recommendations.length === 0) {
-            resultsDiv.innerHTML = `<div class="p-4 bg-yellow-100 text-yellow-700 rounded-md">No recommendations generated. Try a different topic or add more training data.</div>`;
-            return;
-        }
-
-        resultsDiv.innerHTML = recommendations.map(rec => `
-            <div class="recommendation-card">
-                <p>${rec.content.replace(/\n/g, '  
-')}</p>
-                <div class="seo-analysis">
-                    <strong>SEO Score: ${rec.seo_score || 'N/A'}</strong>
-                    <ul>${(rec.seo_recommendations || []).map(r => `<li>${r}</li>`).join('')}</ul>
-                </div>
-                <button class="create-ab-test-btn" data-content='${JSON.stringify(rec)}'>Create A/B Test</button>
+        <!-- Section 2: Generate Content -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">2. Generate New Content</h2>
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
+                <input type="text" id="content-topic" class="w-full p-2 border rounded-md" placeholder="Enter a topic (e.g., 'new product launch')">
+                <select id="content-type-select" class="w-full p-2 border rounded-md">
+                    <option value="tweet">Tweet</option>
+                    <option value="linkedin_post">LinkedIn Post</option>
+                    <option value="blog_post">Blog Post</option>
+                </select>
+                <button id="generate-content-btn" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 whitespace-nowrap">Generate Ideas</button>
             </div>
-        `).join('');
-    }
+            <div id="content-results" class="mt-6 space-y-4">
+                <!-- Generated content will appear here -->
+            </div>
+        </div>
+    </div>
 
-    // --- A/B TESTING ---
-    handleCreateABTest(button) {
-        const contentData = JSON.parse(button.dataset.content);
-        if (window.abTestingModule) {
-            window.abTestingModule.createTest(`A/B Test for "${contentData.focus}"`, contentData);
-        } else {
-            this.showNotification('A/B testing module not loaded.', 'error');
-        }
-    }
+    <!-- IMPORTANT: Link to your main JavaScript file at the end of the body -->
+    <script src="/static/js/social-media-automation.js"></script>
 
-    // --- UTILITIES ---
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        const colors = {
-            success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500'
-        };
-        notification.className = `fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-50 ${colors[type]}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 5000);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    window.socialMediaManager = new SocialMediaAutomation();
-});
+</body>
+</html>
